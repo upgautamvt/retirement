@@ -1,0 +1,58 @@
+Synchronization Workflow:
+
+    Initial Offset: The sender writes its initial timestamp (t[0]) to shared memory.
+    The receiver initializes time1 = t[0] + 20000, while the sender sets time3 = t[0] + 20000.
+    This establishes a shared starting point offset by 20,000 TSC cycles (likely to allow time for setup and alignment).
+
+    Lockstep Increments: Both processes increment their timers (time3 for sender, time1 for receiver) by 7000 TSC cycles
+    per iteration, creating a synchronized "heartbeat" where they alternate between:
+
+        Busy-waiting (while (time2 < time3/time1): Ensures each iteration starts only after the previous
+                                                    one’s 7,000-cycle window expires.
+
+        Execution phase: Running their respective loops (sender’s branch-specific loop, receiver’s measurement loop).
+
+Timing Precision:
+
+    TSC (Time Stamp Counter): A low-level CPU register that counts cycles at the processor’s frequency.
+    Both processes use rdtsc() to read it directly, avoiding OS scheduling jitter.
+
+    Busy-Wait Alignment: The loops while (time2 < time3/time1) ensure strict synchronization.
+    Even if processes start at different times, they "catch up" to the same schedule through repeated TSC checks.
+
+Microarchitectural Contention:
+
+    Shared CPU Resources: Sender and receiver run on sibling hyper-threads sharing the
+    same physical core’s retirement unit, execution ports, and caches.
+
+    Sender’s Activity: Each sender branch (i = j % 8) executes a slightly different loop
+    (due to compiler-preserved code variations), causing unique contention patterns in shared resources.
+
+    Receiver’s Measurement: The receiver measures t[j] = rdtsc() - time3—the time taken to
+     execute its own empty loop. This time varies due to sender-induced contention
+     (e.g., if the sender’s loop stalls the retirement unit, the receiver’s loop takes longer).
+
+Secret Leakage Mechanism:
+
+    Periodic Patterns: The sender cycles through 8 branches (i = j % 8). The receiver observes
+    timing variations every 8 iterations, correlating t[j] peaks/dips with the sender’s branch sequence.
+
+    Example: If i=0 causes heavy retirement unit contention, the receiver sees higher t[j] values every
+    8th iteration, leaking the sender’s branch sequence (and thus secrets if i depends on sensitive data).
+
+Key Technical Enhancements
+
+Why 20000/7000?:
+
+    20000: A calibration offset to account for initial setup latency (e.g., shared memory synchronization).
+
+    7000: A tuned interval to align with CPU frequency, ensuring sender/receiver execution
+    phases overlap long enough to induce measurable contention.
+
+Compiler’s Role:
+The explicit per-branch loops (instead of a helper function) preserve code diversity to
+ensure distinct machine code per branch, maintaining variability in retirement unit usage.
+
+Hyper-Threading Exploit:
+This is a cross-core side-channel attack leveraging hyper-threading. Without shared physical
+resources (e.g., separate cores), the attack would fail.
