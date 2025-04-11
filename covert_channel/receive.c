@@ -71,4 +71,7 @@ int main() {
         return 0;
     }
     return 1;
+
+    //if(receiver.t[j]<sender.t[j] it means sender did something time-consuming.
+    //if there is a high stall here, receiver is sure that i=1 at the sender
 }

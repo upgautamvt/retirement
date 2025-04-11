@@ -62,11 +62,16 @@ int main() {
             time2 = rdtsc();
 
         //starts on timettttt
+
+        //each branch here is used to represent different stall modulation scenario, although they are same here
+        // in real secret leak, they should be doing something different
+
+        //there can be only two branches.
         if (i == 0) {
-            for (z = 0; z < 100; z++) { }
+            for (z = 0; z < 100; z++) { } //receiver knows the time for this exactly
         }
         else if (i == 1) {
-            for (z = 0; z < 100; z++) { }
+            for (z = 0; z < 100; z++) { } // this is unknown to receiver
         }
         else if (i == 2) {
             for (z = 0; z < 100; z++) { }
