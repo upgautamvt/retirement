@@ -54,7 +54,7 @@ int main() {
      * Finally, time3 is incremented by 7000 cycles.
      */
     for (j = 0; j < 100000; j++) {
-        i = j % 8;
+        i = j % 8; //the assumption is i is secret, and it is based on j
         time2 = rdtsc();
 
         //busy looping to sync up with receiver so that the lines belwo i.e., if block start exactly on the same time
