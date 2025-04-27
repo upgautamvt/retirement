@@ -27,21 +27,21 @@ int main() {
         return 0;
     }
 
-    //both sender and receiver complete getting rv and shmid. This ensure they both get same
+    //both sender and receiver complete getting rv and shmid. This ensures they both get same
     //semaphore set and shared memory
 
     /* Wait for the receiver to write the timestamp */
     //P operation decrements the semphore value (or blocks if the value is 0), ensuring that a process
     //waits until a resource is available
-    semaphore_p(); //intially it blocks because value is 0 (there is nothing at the beginning)
+    semaphore_p(); //initially it blocks because value is 0 (there is nothing at the beginning)
     //blocking to sender means allowing to receiver
 
     //it means if sender ran way before receiver then it stops at semaphore_p(), if receiver ran then even better
-    //beacuse receiver does all it need to do and calls semaphore_v() to signal sender
+    //because receiver does all it needs to do and calls semaphore_v() to signal sender
 
     //the sender's job is to wait the receiver's signal
     //pkt is updated by receiver, where receiver put the timestamps
-    //now, sender stores these pkt's tmestamps back into its own t array
+    //now, sender stores these pkt's timestamps back into its own t array
     // it means both sender's and receiver's t array are same
     memcpy(t, ((shared_use_t*)shm)->pkt, ((shared_use_t*)shm)->pktlen);
     time3 = t[0] + 20000; //this is exactly same value as time1 of receiver

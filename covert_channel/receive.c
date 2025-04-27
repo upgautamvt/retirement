@@ -35,7 +35,7 @@ int main() {
     shared->pktlen = sizeof(t[0]);
     memcpy(shared->pkt, t, sizeof(t[0]));
     semaphore_v(); //increment the semaphore count. This increment signals the sender now can proceed
-    //the v operation is the mechanism by which the receiver notifies the waiting sender that the sared
+    //the v operation is the mechanism by which the receiver notifies the waiting sender that the shared
     // resource has been set up
 
     //after the signal is sent, it immediately starts executing below lines because semaphore signals are
