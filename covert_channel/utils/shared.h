@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <x86intrin.h>
 #include "cacheutils.h"
+#include <inttypes.h>
 
 #define SEM_KEY     100
 #define SHM_KEY     101
@@ -44,7 +45,9 @@ int semaphore_v(void);
 
 /* Shared memory functions */
 int sharemmy_init(void);
+int sharemmy_attach(void);
 int sharemmy_destroy(int shmid, void *shm_ptr);
+int sharemmy_detach(void *shm_ptr);
 
 /* CPU affinity and related functions */
 void set_cpu(int id);

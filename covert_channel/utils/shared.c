@@ -77,9 +77,30 @@ int sharemmy_init(void) {
     return shmid;
 }
 
+int sharemmy_attach(void) {
+    int shmid;
+
+    // Try to access existing shared memory segment (do NOT create one)
+    shmid = shmget((key_t)SHM_KEY, sizeof(shared_use_t), 0666);
+    if (shmid == -1) {
+        perror("shmget failed");
+        return -1;
+    }
+
+    // Attach to the existing shared memory segment
+    shm = shmat(shmid, NULL, 0);
+    if (shm == (void *)-1) {
+        perror("shmat failed");
+        return -1;
+    }
+
+    return shmid;
+}
+
+
 int sharemmy_destroy(int shmid, void *shm_ptr) {
     int rv;
-    rv = shmdt(shm_ptr);
+    rv = shmdt(shm_ptr); //shmdt means shared memory detach
     if (rv == -1) {
         perror("shmdt failed");
         return rv;
@@ -87,6 +108,14 @@ int sharemmy_destroy(int shmid, void *shm_ptr) {
     rv = shmctl(shmid, IPC_RMID, 0);
     if (rv == -1) {
         perror("shmctl IPC_RMID failed");
+        return rv;
+    }
+    return 0;
+}
+
+int sharemmy_detach(void *shm_ptr) {
+    int rv = shmdt(shm_ptr);
+    if (rv == -1) {
         return rv;
     }
     return 0;

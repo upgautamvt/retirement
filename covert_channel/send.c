@@ -6,6 +6,7 @@
 u_int64_t t[1000000];
 
 //always send should run after receive is run
+//And send should finish before receive
 int main() {
     int rv, i, j, z;
     int shmid;
@@ -26,7 +27,7 @@ int main() {
     }
 
     puts("share memory init");
-    shmid = sharemmy_init();
+    shmid = sharemmy_attach();
     if (shmid == -1) {
         printf("Init shared memory failed.\n");
         return 0;
@@ -51,7 +52,7 @@ int main() {
     memcpy(t, ((shared_use_t*)shm)->pkt, ((shared_use_t*)shm)->pktlen);
     time3 = t[0] + 20000; //this is exactly same value as time1 of receiver
 
-    printf("time:%ld\n", time3);
+    printf("time: %" PRIu64 "\n", time3);
 
     /*
      * In each iteration, we busy-wait until the timestamp counter (TSC) reaches time3.
@@ -99,7 +100,8 @@ int main() {
         time3 += 7000;
     }
 
-    rv = sharemmy_destroy(shmid, shm);
+    //shm is initialized durin sharemmy_init
+    rv = sharemmy_detach(shm); //just detach shared memory, receiver will destroy later
     if (rv < 0) {
         printf("Destroy shared memory failed.\n");
         return 0;

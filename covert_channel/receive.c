@@ -71,6 +71,9 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
     // async. (i.e., non-blocking)
     time1 = t[0] + 20000;
 
+    printf("time: %" PRIu64 "\n", time1);
+
+
     /*
      * In each iteration, the receiver busy-waits until time1 is reached.
      * It then measures the execution time of an empty loop and prints the measured delay.
