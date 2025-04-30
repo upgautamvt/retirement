@@ -56,3 +56,102 @@ ensure distinct machine code per branch, maintaining variability in retirement u
 Hyper-Threading Exploit:
 This is a cross-core side-channel attack leveraging hyper-threading. Without shared physical
 resources (e.g., separate cores), the attack would fail.
+
+
+
+Assembly modification
+
+(1) Atomic Memory-Barriers Added (Inserted XCHG)
+
+The modified code inserts XCHG (exchange) instructions around memory operations where the original had simple MOV or similar instructions. For example:
+    Original:
+        movl   %eax,(%ebx)       ; store EAX into [EBX]
+
+    Modified:
+        xchgl  %eax,(%ebx)       ; atomic exchange: XCHG [EBX], EAX
+
+        On x86, XCHG with a memory operand implicitly uses the LOCK prefix, turning it into a full atomic RMW (Read-Modify-Write) and a full memory barrier. In contrast, a plain MOV store does not by itself prevent reordering. The effect of the inserted XCHG is to force any previous stores to complete and become visible before continuing, ensuring strict ordering. In practice this likely synchronizes memory and/or stalls the CPU pipeline, changing timing. As one source notes, “the implicit lock prefix on an xchg with memory makes it a full memory barrier”
+        (and on x86 sequential-consistent stores often use XCHG. This suggests the patch’s intent was to enforce memory synchronization or introduce deliberate delays around critical memory accesses.
+
+Replacing movl %eax, (%ebx) with xchgl %eax, (%ebx) in an assembly .s file enforces a full memory barrier. This means that all memory loads and stores before the xchg must complete before any following instructions proceed.
+
+The xchg instruction is a read-modify-write (RMW) operation and, when used with a memory operand, it implicitly includes a LOCK prefix, making it atomic. This makes the operation expensive — it stalls the CPU pipeline, flushes cache lines, and prevents reordering.
+
+Because of this cost, xchg is often used not just for atomic updates but also to synchronize memory visibility or intentionally delay execution for debugging or timing control.
+Note: RMV atomic operations (read modify write: cpu reads value from memory into register, modifies (or swaps) or updates there, writes back to memory from register. All as one indivisible step — no other core, thread, or device can observe or interfere in the middle.
+Note: xchg with registers only is not atomic because it doesn't need to be because it happens very fast.
+But xchg with memory involving is atomic.
+The instruction xchgl %eax, (%ebx) atomically swaps the contents of %eax with the value at memory location (%ebx), reading and then writing to memory.
+
+Note: Full memory barriers, all memory stores and loads before the barrier must complete and be visible before any memory stores or loads after the barrier can begin.
+Full memory barriers are used to prevent (1) hardware level instruction reordering (ii) compiler level instructions reordering
+LOCK prefix ensures exclusive access to the memory bus, which grabs a lock for a moment on a whole memory line, and this is why it is very expensive and synchronizing.
+XCHG: Atomic RMW, Implicit LOCK prefix, acts as full memory barrier (that enforces both load and store ordering at hardware and compiler level), and stalls CPU pipeline and forces cache coherence resolution (because old cache flushing must happen before new starts because of full memory barrier)
+
+(2) Loop/Branch Structure Changed (Replaced LOOP with DEC/JNZ)
+
+    The original code used the LOOP instruction to implement a delay or count-controlled loop. In the patch this was replaced with an explicit decrement-and-branch sequence. For example:
+
+    ; Original version (uses LOOP instruction)
+        movl   $count, %ecx
+    loop_start:
+        ...                ; (loop body doing work)
+        loop   loop_start
+
+    ; Modified version (uses DEC and JNZ)
+        movl   $count, %ecx
+    loop_start:
+        ...                ; (same loop body)
+        decl   %ecx
+        jnz    loop_start
+
+    Replacing LOOP with DEC %ecx + JNZ likely improves performance and predictability. On many modern CPUs the single-byte LOOP instruction is microcoded and can be slower or cause pipeline stalls, whereas separate DEC and conditional jump have more straightforward execution. This change may help the CPU’s branch predictor or reduce instruction overhead. Functionally, it preserves the same loop-count behavior (both stop when %ecx becomes zero) but can execute faster per iteration. The intent is likely performance tuning or altering loop timing: for instance, to avoid the unpredictable latency of LOOP and achieve a more consistent countdown​
+    llvm.org
+    ​
+    stackoverflow.com
+    .
+
+(3) Inserted No-Op or Padding Instructions (Timing/Alignment)
+
+    Several no-op or dummy instructions were added, likely to adjust timing or alignment without changing core logic. For example, the modified code may include extra nop or harmless XCHG with the same register:
+
+    Original:
+        ...            ; no filler here
+
+    Modified:
+        nop
+        xchgl %eax,%eax      ; exchange register with itself (effectively a pause)
+        nop
+
+    Such inserted instructions do not affect register state but consume CPU cycles. They are often used to pad out delays or disrupt instruction scheduling, making execution slower or less predictable. Inserting XCHG %eax, %eax, for instance, acts like a no-op but still incurs the implicit lock-barrier effect (even a register-to-register XCHG can be slower than a true NOP). The presence of extra NOP-style instructions suggests the patch’s author wanted to introduce slight delays or obfuscate the instruction sequence. This can lengthen the loop duration (lowering performance) without altering functional outcomes.
+
+(4) Changed Conditional/Loop Logic
+
+    The modification also tweaks branch conditions in a few places. For example, a comparison or test might have been rewritten:
+
+    Original:
+        cmpl   %ebx, %eax
+        jne    label
+
+    Modified:
+        testl  %eax, %eax
+        jle    label
+
+    In this hypothetical snippet, changing from CMP/JNE to TEST/JLE alters how the zero and sign flags are set. Such a change can alter branching behavior and timing: TEST %eax,%eax is a common idiom to check if a register is zero, and it leaves the flags in a predictable way for signed comparisons. This may have been done to streamline flag setting or change loop termination conditions. (Without the exact code it’s hard to say, but any change from CMP to TEST typically is for efficiency or clarity.) The performance impact is usually minor, but it can subtly affect how often branches are taken and how the CPU’s branch predictor behaves.
+
+
+Summary of Intent and Impact
+
+Overall, the patch appears to add synchronization and delay without altering high-level functionality. The inserted XCHG instructions serve as full memory barriers​
+stackoverflow.com
+, ensuring strict ordering of memory operations (useful for inter-thread sync or avoiding reorder optimization). Replacing LOOP with DEC/JNZ likely improves loop performance and predictability. Additional NOP/dummy instructions introduce padding, deliberately slowing execution or thwarting simple analysis. In combination, these changes make the send routine execute more slowly or with different timing characteristics (e.g. longer busy-wait loops or forced cache flushes), while maintaining the same outward behavior. The overall effect is a slower, more tightly synchronized loop, which could be intended to throttle the send-rate or obscure the timing of events​
+stackoverflow.com
+​
+llvm.org
+.
+
+Sources: The behavior of XCHG as a locked, full-memory-barrier instruction on x86 is documented (e.g. “the implicit lock prefix on an xchg with memory makes it a full memory barrier”​
+stackoverflow.com
+). On x86 the only way to implement a sequentially consistent store without a separate fence is via XCHG​
+llvm.org
+. These changes (locks/fences, different loop instructions) match typical strategies for altering timing or synchronization in low-level code.

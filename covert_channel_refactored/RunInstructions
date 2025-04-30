@@ -1,10 +1,10 @@
 - First, set the input of the set_cpu function in both send.c and receive.c to two logical cores that belong to the same physical core.
 The specific cores depend on your processor's topology (use lscpu -e)
 
-- Next, compile send.c into send.s, modify send.s as per the described changes, and then compile it into the final send binary.
-Repeat the same process for receive.c.
+- Next, default compile send.c into send.s, modify send.s as per the described changes (lines 626 to 787). Create final binary
+Repeat the same process for receive.c (lines 669 to 731). Create final binary.
 
-- After compiling, open one terminal and run ./receive > re.txt. In another terminal, run ./send.
+- Run as "./receive > re.txt". In another terminal, run ""./send".
 Once execution is complete, you'll find the results in re.txt.
 
 - Use the values in re.txt to set the appropriate threshold in result.c.
