@@ -5,22 +5,27 @@
 /* Global array for timing measurements */
 u_int64_t t[1000000];
 
+//always send should run after receive is run
 int main() {
     int rv, i, j, z;
     int shmid;
     /* Use register variables for timing */
-    register u_int64_t time1, time2, time3;
+    register u_int64_t time2, time3;
 
     puts("cpu affinity set");
-    set_cpu(8);         // Pin this process to the 8th CPU core
-    check_cpu_affinity();
+    set_cpu(16);         // Pin this process to the CPU 16
+    if (check_cpu_affinity() < 0) {
+        fprintf(stderr, "Warning: CPU affinity check failed, continuing anyway\n");
+    }
 
-    rv = semaphore_init();
+    puts("Semaphore get");
+    rv = semaphore_get();
     if (rv < 0) {
         printf("Init semaphore failed.\n");
         return 0;
     }
 
+    puts("share memory init");
     shmid = sharemmy_init();
     if (shmid == -1) {
         printf("Init shared memory failed.\n");
@@ -31,7 +36,7 @@ int main() {
     //semaphore set and shared memory
 
     /* Wait for the receiver to write the timestamp */
-    //P operation decrements the semphore value (or blocks if the value is 0), ensuring that a process
+    //P operation decrements the semaphore value (or blocks if the value is 0), ensuring that a process
     //waits until a resource is available
     semaphore_p(); //initially it blocks because value is 0 (there is nothing at the beginning)
     //blocking to sender means allowing to receiver
@@ -46,7 +51,7 @@ int main() {
     memcpy(t, ((shared_use_t*)shm)->pkt, ((shared_use_t*)shm)->pktlen);
     time3 = t[0] + 20000; //this is exactly same value as time1 of receiver
 
-    printf("time: %ld\n", t[0]);
+    printf("time:%ld\n", time3);
 
     /*
      * In each iteration, we busy-wait until the timestamp counter (TSC) reaches time3.

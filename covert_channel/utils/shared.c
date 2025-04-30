@@ -32,6 +32,7 @@ int semaphore_v(void) {
 //shared resources. There is one id for all the semaphore in semaphore set. So, management is easy
 
 //Semaphore is used to control only one process accees a shared resource (used for synchronization)
+//first called by receive and then send calls semaphore_get
 int semaphore_init(void) {
     union semun sem_union;
     //creates or retrieves a semaphore set
@@ -45,6 +46,16 @@ int semaphore_init(void) {
     sem_union.val = 0;
     if (semctl(sem_id, 0, SETVAL, sem_union) == -1) {
         perror("semctl SETVAL failed");
+        return -1;
+    }
+    return 0;
+}
+
+//just get the already created semaphore. This is called by send
+int semaphore_get(void)
+{
+    sem_id = semget((key_t)SEM_KEY, 0, 0666 | IPC_CREAT);
+    if (sem_id == -1) {
         return -1;
     }
     return 0;

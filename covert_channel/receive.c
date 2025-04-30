@@ -9,20 +9,49 @@ int main() {
     u_int64_t t[1000000];
     shared_use_t* shared;
 
+    //in 8 core CPU, core 0 and core 8 belong to the same physical coe
+    // each physical core has two logical cores. For 8 physical cores, we have
+    // logical cores 0, 1, 2, 3, 4, 5, 6, 7, and then again repeat 8, 9, 10,...,
+    // To find out more: lscpu -e
+    /*
+     * As you can see here, in my AMD ryzen 7950x 16 cores CPU, I have total 32 logical cores
+     * Physical core 0 shared two CPU i.e., 0 and 16
+    *upgautam@amd:~$ lscpu -e
+CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
+  0    0      0    0 0:0:0:0          yes 5881.0000 400.0000 4751.6250
+  1    0      0    1 1:1:1:0          yes 5881.0000 400.0000  400.0000
+  2    0      0    2 2:2:2:0          yes 5881.0000 400.0000  400.0000
+  3    0      0    3 3:3:3:0          yes 5881.0000 400.0000  400.0000
+  4    0      0    4 4:4:4:0          yes 5881.0000 400.0000  400.0000
+  5    0      0    5 5:5:5:0          yes 5881.0000 400.0000 5486.9082
+  6    0      0    6 6:6:6:0          yes 5881.0000 400.0000 4690.6572
+  7    0      0    7 7:7:7:0          yes 5881.0000 400.0000  400.0000
+  8    0      0    8 8:8:8:1          yes 5881.0000 400.0000  400.0000
+  9    0      0    9 9:9:9:1          yes 5881.0000 400.0000  400.0000
+ 10    0      0   10 10:10:10:1       yes 5881.0000 400.0000  400.0000
+ 11    0      0   11 11:11:11:1       yes 5881.0000 400.0000  400.0000
+ 12    0      0   12 12:12:12:1       yes 5881.0000 400.0000  400.0000
+ 13    0      0   13 13:13:13:1       yes 5881.0000 400.0000  400.0000
+ 14    0      0   14 14:14:14:1       yes 5881.0000 400.0000 5486.2100
+ 15    0      0   15 15:15:15:1       yes 5881.0000 400.0000  400.0000
+ 16    0      0    0 0:0:0:0          yes 5881.0000 400.0000  400.0000
+
+     */
+
+    puts("cpu affinity set");
     set_cpu(0); // Pin this process to CPU 0
-    cpu_set_t get;
-    CPU_ZERO(&get);
-    if (sched_getaffinity(0, sizeof(get), &get) == -1) {
-        printf("get CPU affinity failed: %s\n", strerror(errno));
-        return -1;
+    if (check_cpu_affinity() < 0) {
+        fprintf(stderr, "Warning: CPU affinity check failed, continuing anyway\n");
     }
 
+    puts("Semaphore Init");
     rv = semaphore_init();
     if (rv < 0) {
         printf("Init semaphore failed.\n");
         return 0;
     }
 
+    puts("share memory init");
     shmid = sharemmy_init();
     if (shmid == -1) {
         printf("Init shared memory failed.\n");

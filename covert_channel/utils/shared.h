@@ -38,6 +38,7 @@ extern void *shm;
 
 /* Semaphore functions */
 int semaphore_init(void);
+int semaphore_get(void);
 int semaphore_p(void);
 int semaphore_v(void);
 

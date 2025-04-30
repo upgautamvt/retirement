@@ -1,27 +1,44 @@
 # Compiler and flags
 CC = gcc
-CFLAGS = -Wall -Wno-unused-variable -Wno-unused-but-set-variable -Wno-unused-function -Wno-maybe-uninitialized -Wno-uninitialized
+CFLAGS = -Wall -Wno-unused-variable -Wno-unused-but-set-variable \
+	-Wno-unused-function -Wno-maybe-uninitialized -Wno-uninitialized
 
-# Find all .c files in the current directory
-SOURCES = $(wildcard *.c)
+# Source files in root directory (each builds to an executable)
+ROOT_SRCS = $(wildcard *.c)
+ROOT_EXES = $(ROOT_SRCS:.c=)
 
-# Generate the corresponding .o object files and .s assembly files
-OBJECTS = $(SOURCES:.c=.o)
-ASSEMBLY = $(SOURCES:.c=.s)
+# Utility object files
+SHARED_OBJ = utils/shared.o
+CACHEUTILS_OBJ = utils/cacheutils.o
 
-# Default target to build all executables and assembly files
-all: $(SOURCES:.c=) $(ASSEMBLY)
+# Assembly output for all source files (including utils)
+ASSEMBLY = $(ROOT_SRCS:.c=.s) \
+	$(SHARED_OBJ:.o=.s) \
+	$(CACHEUTILS_OBJ:.o=.s)
 
-# Rule to compile each .c file into an executable
-%: %.c
-	$(CC) $(CFLAGS) -o $@ $<
+.PHONY: all clean asm
 
-# Rule to generate .s assembly files
+# Default target: build all executables and assembly
+all: $(ROOT_EXES) asm
+
+# Rule to compile each root .c into its executable, linking utilities
+%: %.c $(SHARED_OBJ) $(CACHEUTILS_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
+
+# Rule to compile utils/shared.c into object
+$(SHARED_OBJ): utils/shared.c utils/shared.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to compile utils/cacheutils.c into object
+$(CACHEUTILS_OBJ): utils/cacheutils.c utils/cacheutils.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to generate assembly files
+asm: $(ASSEMBLY)
+
 %.s: %.c
 	$(CC) $(CFLAGS) -S $< -o $@
 
-# Clean up object files, assembly files, and executables
+# Clean up executables, object files, and assembly files
 clean:
-	rm -f $(OBJECTS) $(ASSEMBLY) $(SOURCES:.c=)
-
-.PHONY: all clean
+	rm -f $(ROOT_EXES) $(SHARED_OBJ) $(CACHEUTILS_OBJ) $(ASSEMBLY)
