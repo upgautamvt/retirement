@@ -1,26 +1,16 @@
+#include<stdlib.h>
 #include<stdio.h>
 
 int main(int argv, char** argc){
-	__int64_t t[1000000]; //one million integers
-	// ./receive > re.txt
+	__int64_t t[1000000];
+	// ./recieve > re.txt
 	FILE *fp=fopen("re.txt","r");
-    // only read 10 thousands
 	for(int i = 0; i < 100000; i++){
-        //file scanner from fp file pointer
-        // scans one integer per call, and updates its
-        // pointer to next integer in the file
-		fscanf(fp,"%ld",&t[i]); //ld long integer
+		fscanf(fp,"%ld",&t[i]);
 	}
 	__int64_t result[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 	int right = 0;
 	for(int i = 0; i < 12500; i++) {
-        //chunks of 8 integer elements together because it is 64 bit system
-        //each iteration performs total 8 values of t[i]
-        //when i=0, there are total 8 if statements from 0 till 7
-        //t[0].....[7] = total 64 bits
-        //then each time each value (i.e., t[i] falls in between certain range
-        // increase right value by 1
-
 		// The range of values depends on the processor
 		if(t[i * 8] > 1750 && t[i * 8] < 1890) {
 			right++;
