@@ -1,0 +1,15 @@
+- First, set the input of the set_cpu function in both send.c and receive.c to two logical cores that belong to the same physical core.
+The specific cores depend on your processor's topology (use lscpu -e)
+
+- Next, compile send.c into send.s, modify send.s as per the described changes, and then compile it into the final send binary.
+Repeat the same process for receive.c.
+
+- After compiling, open one terminal and run ./receive > re.txt. In another terminal, run ./send.
+Once execution is complete, you'll find the results in re.txt.
+
+- Use the values in re.txt to set the appropriate threshold in result.c.
+These thresholds are processor-dependent, but the relative timing patterns are generally consistent, allowing decryption to work across different devices.
+
+- On AMD processors, the rdtsc instruction has lower precision, so the original eight-loop structure may not yield eight
+distinct timing differences. However, at least four distinct differences should still appear, as explained in the paper
+ “Microarchitectural Attacks and Mitigations on Retire Resources in Modern Processors.”
