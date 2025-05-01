@@ -2,6 +2,7 @@
 #include <sys/un.h>
 #include <sys/types.h>
 
+//produce re.txt by redirecting standard output by running ./receive > re.txt
 int main() {
     int rv, j, z;
     int shmid;
@@ -38,20 +39,20 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
 
      */
 
-    puts("cpu affinity set");
+    //puts("cpu affinity set");
     set_cpu(0); // Pin this process to CPU 0
     if (check_cpu_affinity() < 0) {
         fprintf(stderr, "Warning: CPU affinity check failed, continuing anyway\n");
     }
 
-    puts("Semaphore Init");
+    //puts("Semaphore Init");
     rv = semaphore_init();
     if (rv < 0) {
         printf("Init semaphore failed.\n");
         return 0;
     }
 
-    puts("share memory Init");
+    //puts("share memory Init");
     shmid = sharemmy_init();
     if (shmid == -1) {
         printf("Init shared memory failed.\n");
@@ -71,7 +72,7 @@ CPU NODE SOCKET CORE L1d:L1i:L2:L3 ONLINE    MAXMHZ   MINMHZ       MHZ
     // async. (i.e., non-blocking)
     time1 = t[0] + 20000;
 
-    printf("time: %" PRIu64 "\n", time1);
+    //printf("time: %" PRIu64 "\n", time1);
 
 
     /*

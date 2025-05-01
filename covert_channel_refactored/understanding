@@ -105,11 +105,7 @@ XCHG: Atomic RMW, Implicit LOCK prefix, acts as full memory barrier (that enforc
         decl   %ecx
         jnz    loop_start
 
-    Replacing LOOP with DEC %ecx + JNZ likely improves performance and predictability. On many modern CPUs the single-byte LOOP instruction is microcoded and can be slower or cause pipeline stalls, whereas separate DEC and conditional jump have more straightforward execution. This change may help the CPU’s branch predictor or reduce instruction overhead. Functionally, it preserves the same loop-count behavior (both stop when %ecx becomes zero) but can execute faster per iteration. The intent is likely performance tuning or altering loop timing: for instance, to avoid the unpredictable latency of LOOP and achieve a more consistent countdown​
-    llvm.org
-    ​
-    stackoverflow.com
-    .
+    Replacing LOOP with DEC %ecx + JNZ likely improves performance and predictability. On many modern CPUs the single-byte LOOP instruction is microcoded and can be slower or cause pipeline stalls, whereas separate DEC and conditional jump have more straightforward execution. This change may help the CPU’s branch predictor or reduce instruction overhead. Functionally, it preserves the same loop-count behavior (both stop when %ecx becomes zero) but can execute faster per iteration. The intent is likely performance tuning or altering loop timing: for instance, to avoid the unpredictable latency of LOOP and achieve a more consistent countdown
 
 (3) Inserted No-Op or Padding Instructions (Timing/Alignment)
 
@@ -130,28 +126,26 @@ XCHG: Atomic RMW, Implicit LOCK prefix, acts as full memory barrier (that enforc
     The modification also tweaks branch conditions in a few places. For example, a comparison or test might have been rewritten:
 
     Original:
-        cmpl   %ebx, %eax
-        jne    label
+        cmpl   %ebx, %eax ; compares two registers
+        jne    label ; if not equal then jump to label
 
+    Note: this original and modified are not equivalent here.
     Modified:
-        testl  %eax, %eax
-        jle    label
+        testl  %eax, %eax ;  bitwise AND EAX with itself
+        jle    label  ; jump to label if EAX ≤ 0
 
     In this hypothetical snippet, changing from CMP/JNE to TEST/JLE alters how the zero and sign flags are set. Such a change can alter branching behavior and timing: TEST %eax,%eax is a common idiom to check if a register is zero, and it leaves the flags in a predictable way for signed comparisons. This may have been done to streamline flag setting or change loop termination conditions. (Without the exact code it’s hard to say, but any change from CMP to TEST typically is for efficiency or clarity.) The performance impact is usually minor, but it can subtly affect how often branches are taken and how the CPU’s branch predictor behaves.
 
 
 Summary of Intent and Impact
 
-Overall, the patch appears to add synchronization and delay without altering high-level functionality. The inserted XCHG instructions serve as full memory barriers​
-stackoverflow.com
-, ensuring strict ordering of memory operations (useful for inter-thread sync or avoiding reorder optimization). Replacing LOOP with DEC/JNZ likely improves loop performance and predictability. Additional NOP/dummy instructions introduce padding, deliberately slowing execution or thwarting simple analysis. In combination, these changes make the send routine execute more slowly or with different timing characteristics (e.g. longer busy-wait loops or forced cache flushes), while maintaining the same outward behavior. The overall effect is a slower, more tightly synchronized loop, which could be intended to throttle the send-rate or obscure the timing of events​
-stackoverflow.com
-​
-llvm.org
-.
+Overall, the patch appears to add synchronization and delay without altering high-level functionality. The inserted XCHG instructions serve as full memory barriers, ensuring strict ordering of memory operations (useful for inter-thread sync or avoiding reorder optimization). Replacing LOOP with DEC/JNZ likely improves loop performance and predictability. Additional NOP/dummy instructions introduce padding, deliberately slowing execution or thwarting simple analysis. In combination, these changes make the send routine execute more slowly or with different timing characteristics (e.g. longer busy-wait loops or forced cache flushes), while maintaining the same outward behavior. The overall effect is a slower, more tightly synchronized loop, which could be intended to throttle the send-rate or obscure the timing of events
 
-Sources: The behavior of XCHG as a locked, full-memory-barrier instruction on x86 is documented (e.g. “the implicit lock prefix on an xchg with memory makes it a full memory barrier”​
-stackoverflow.com
-). On x86 the only way to implement a sequentially consistent store without a separate fence is via XCHG​
-llvm.org
-. These changes (locks/fences, different loop instructions) match typical strategies for altering timing or synchronization in low-level code.
+Sources: The behavior of XCHG as a locked, full-memory-barrier instruction on x86 is documented (e.g. “the implicit lock prefix on an xchg with memory makes it a full memory barrier"). On x86 the only way to implement a sequentially consistent store without a separate fence is via XCHG. These changes (locks/fences, different loop instructions) match typical strategies for altering timing or synchronization in low-level code.
+
+In signed (i.e., 2's complement form) if the MSB is 1 it means the number is negative. E.g., 10000000 = −128 (MSB is 1 → negative)
+
+movb $127, %al     ; AL = 01111111 (max positive 8-bit signed value)
+addb $1, %al       ; AL becomes 10000000 = -128 (in signed 8-bit)
+Here signed overflow will occur because if this is 8 bit signed then there can be -128, 127 but when we add 1 to 127, it becomes 128, which is overflow.
+We will see overflow flag (OF)
