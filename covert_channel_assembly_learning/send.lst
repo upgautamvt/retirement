@@ -1,0 +1,801 @@
+
+send.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <rdtsc_nofence>:
+#include "cacheutils.h"
+#include <x86intrin.h>
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+   0:	f3 0f 1e fa          	endbr64
+   4:	55                   	push   %rbp
+   5:	48 89 e5             	mov    %rsp,%rbp
+#include <string.h>
+#include <stddef.h>
+   8:	0f 31                	rdtsc
+   a:	48 89 45 f0          	mov    %rax,-0x10(%rbp)
+   e:	48 89 55 f8          	mov    %rdx,-0x8(%rbp)
+#include <errno.h>
+  12:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+  16:	48 c1 e0 20          	shl    $0x20,%rax
+  1a:	48 09 45 f0          	or     %rax,-0x10(%rbp)
+#include <sys/un.h>
+  1e:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+#include <sys/types.h>
+  22:	5d                   	pop    %rbp
+  23:	c3                   	ret
+
+0000000000000024 <rdtsc>:
+#include <sys/sem.h>
+#include <sys/shm.h>
+  24:	f3 0f 1e fa          	endbr64
+  28:	55                   	push   %rbp
+  29:	48 89 e5             	mov    %rsp,%rbp
+#include <sys/stat.h>
+#include <sys/socket.h>
+  2c:	0f ae f0             	mfence
+
+  2f:	0f 31                	rdtsc
+  31:	48 89 45 f0          	mov    %rax,-0x10(%rbp)
+  35:	48 89 55 f8          	mov    %rdx,-0x8(%rbp)
+#define SEM_KEY     100
+  39:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+  3d:	48 c1 e0 20          	shl    $0x20,%rax
+  41:	48 09 45 f0          	or     %rax,-0x10(%rbp)
+#define SHM_KEY     101
+  45:	0f ae f0             	mfence
+
+  48:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+
+  4c:	5d                   	pop    %rbp
+  4d:	c3                   	ret
+
+000000000000004e <rdtsc_begin>:
+
+typedef struct shared_use {
+  4e:	f3 0f 1e fa          	endbr64
+  52:	55                   	push   %rbp
+  53:	48 89 e5             	mov    %rsp,%rbp
+  56:	53                   	push   %rbx
+    int pktlen;
+    unsigned char pkt[1528];
+  57:	0f ae f0             	mfence
+  5a:	0f a2                	cpuid
+  5c:	0f 01 f9             	rdtscp
+  5f:	48 89 d7             	mov    %rdx,%rdi
+  62:	48 89 c6             	mov    %rax,%rsi
+  65:	0f ae f0             	mfence
+  68:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  6c:	48 89 75 f0          	mov    %rsi,-0x10(%rbp)
+
+{
+int val;
+
+struct semid_ds *buf;
+
+  70:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  74:	48 c1 e0 20          	shl    $0x20,%rax
+  78:	48 09 45 f0          	or     %rax,-0x10(%rbp)
+unsigned short *array;
+  7c:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+
+  80:	48 8b 5d f8          	mov    -0x8(%rbp),%rbx
+  84:	c9                   	leave
+  85:	c3                   	ret
+
+0000000000000086 <rdtsc_end>:
+}sem_union;
+
+  86:	f3 0f 1e fa          	endbr64
+  8a:	55                   	push   %rbp
+  8b:	48 89 e5             	mov    %rsp,%rbp
+  8e:	53                   	push   %rbx
+static int sem_id = 0;
+static void *shm = NULL;
+  8f:	0f ae f0             	mfence
+  92:	0f 01 f9             	rdtscp
+  95:	48 89 d7             	mov    %rdx,%rdi
+  98:	48 89 c6             	mov    %rax,%rsi
+  9b:	0f a2                	cpuid
+  9d:	0f ae f0             	mfence
+  a0:	48 89 7d e8          	mov    %rdi,-0x18(%rbp)
+  a4:	48 89 75 f0          	mov    %rsi,-0x10(%rbp)
+    struct sembuf sem_b;
+
+    sem_b.sem_num = 0;
+    sem_b.sem_op = 1;
+    sem_b.sem_flg = SEM_UNDO;
+    if (semop(sem_id, &sem_b, 1) == -1) {
+  a8:	48 8b 45 e8          	mov    -0x18(%rbp),%rax
+  ac:	48 c1 e0 20          	shl    $0x20,%rax
+  b0:	48 09 45 f0          	or     %rax,-0x10(%rbp)
+        return -1;
+  b4:	48 8b 45 f0          	mov    -0x10(%rbp),%rax
+    }
+  b8:	48 8b 5d f8          	mov    -0x8(%rbp),%rbx
+  bc:	c9                   	leave
+  bd:	c3                   	ret
+
+00000000000000be <maccess>:
+
+    return 0;
+}
+  be:	f3 0f 1e fa          	endbr64
+  c2:	55                   	push   %rbp
+  c3:	48 89 e5             	mov    %rsp,%rbp
+  c6:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+
+  ca:	48 8b 55 f8          	mov    -0x8(%rbp),%rdx
+  ce:	48 89 d1             	mov    %rdx,%rcx
+  d1:	48 8b 01             	mov    (%rcx),%rax
+static int semaphore_p()
+{
+    struct sembuf sem_b;
+
+  d4:	90                   	nop
+  d5:	5d                   	pop    %rbp
+  d6:	c3                   	ret
+
+00000000000000d7 <flush>:
+    sem_b.sem_num = 0;
+    sem_b.sem_op = -1;
+  d7:	f3 0f 1e fa          	endbr64
+  db:	55                   	push   %rbp
+  dc:	48 89 e5             	mov    %rsp,%rbp
+  df:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+    sem_b.sem_flg = SEM_UNDO;
+  e3:	48 8b 55 f8          	mov    -0x8(%rbp),%rdx
+  e7:	48 89 d1             	mov    %rdx,%rcx
+  ea:	0f ae 39             	clflush (%rcx)
+    if (semop(sem_id, &sem_b, 1) == -1) {
+        return -1;
+    }
+
+  ed:	90                   	nop
+  ee:	5d                   	pop    %rbp
+  ef:	c3                   	ret
+
+00000000000000f0 <prefetch>:
+    return 0;
+}
+
+  f0:	f3 0f 1e fa          	endbr64
+  f4:	55                   	push   %rbp
+  f5:	48 89 e5             	mov    %rsp,%rbp
+  f8:	48 89 7d f8          	mov    %rdi,-0x8(%rbp)
+static int semaphore_init()
+  fc:	0f 18 55 f8          	prefetcht1 -0x8(%rbp)
+{
+ 100:	90                   	nop
+ 101:	5d                   	pop    %rbp
+ 102:	c3                   	ret
+
+0000000000000103 <longnop>:
+    sem_id = semget((key_t)SEM_KEY, 0, 0666 | IPC_CREAT);
+    if (sem_id == -1) {
+        return -1;
+ 103:	f3 0f 1e fa          	endbr64
+ 107:	55                   	push   %rbp
+ 108:	48 89 e5             	mov    %rsp,%rbp
+    }
+ 10b:	90                   	nop
+ 10c:	90                   	nop
+ 10d:	90                   	nop
+ 10e:	90                   	nop
+ 10f:	90                   	nop
+ 110:	90                   	nop
+ 111:	90                   	nop
+ 112:	90                   	nop
+ 113:	90                   	nop
+ 114:	90                   	nop
+ 115:	90                   	nop
+ 116:	90                   	nop
+ 117:	90                   	nop
+ 118:	90                   	nop
+ 119:	90                   	nop
+ 11a:	90                   	nop
+ 11b:	90                   	nop
+ 11c:	90                   	nop
+ 11d:	90                   	nop
+ 11e:	90                   	nop
+ 11f:	90                   	nop
+ 120:	90                   	nop
+ 121:	90                   	nop
+ 122:	90                   	nop
+ 123:	90                   	nop
+ 124:	90                   	nop
+ 125:	90                   	nop
+ 126:	90                   	nop
+ 127:	90                   	nop
+ 128:	90                   	nop
+ 129:	90                   	nop
+ 12a:	90                   	nop
+ 12b:	90                   	nop
+ 12c:	90                   	nop
+ 12d:	90                   	nop
+ 12e:	90                   	nop
+ 12f:	90                   	nop
+ 130:	90                   	nop
+ 131:	90                   	nop
+ 132:	90                   	nop
+ 133:	90                   	nop
+ 134:	90                   	nop
+ 135:	90                   	nop
+ 136:	90                   	nop
+ 137:	90                   	nop
+ 138:	90                   	nop
+ 139:	90                   	nop
+ 13a:	90                   	nop
+ 13b:	90                   	nop
+ 13c:	90                   	nop
+ 13d:	90                   	nop
+ 13e:	90                   	nop
+ 13f:	90                   	nop
+ 140:	90                   	nop
+ 141:	90                   	nop
+ 142:	90                   	nop
+ 143:	90                   	nop
+ 144:	90                   	nop
+ 145:	90                   	nop
+ 146:	90                   	nop
+ 147:	90                   	nop
+ 148:	90                   	nop
+ 149:	90                   	nop
+ 14a:	90                   	nop
+    return 0;
+}
+
+static int sharemmy_init(void)
+{
+    int shmid;
+ 14b:	90                   	nop
+ 14c:	5d                   	pop    %rbp
+ 14d:	c3                   	ret
+
+000000000000014e <semaphore_v>:
+{
+ 14e:	f3 0f 1e fa          	endbr64
+ 152:	55                   	push   %rbp
+ 153:	48 89 e5             	mov    %rsp,%rbp
+ 156:	48 83 ec 10          	sub    $0x10,%rsp
+ 15a:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+ 161:	00 00 
+ 163:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+ 167:	31 c0                	xor    %eax,%eax
+    sem_b.sem_num = 0;
+ 169:	66 c7 45 f2 00 00    	movw   $0x0,-0xe(%rbp)
+    sem_b.sem_op = 1;
+ 16f:	66 c7 45 f4 01 00    	movw   $0x1,-0xc(%rbp)
+    sem_b.sem_flg = SEM_UNDO;
+ 175:	66 c7 45 f6 00 10    	movw   $0x1000,-0xa(%rbp)
+    if (semop(sem_id, &sem_b, 1) == -1) {
+ 17b:	8b 05 00 00 00 00    	mov    0x0(%rip),%eax        # 181 <semaphore_v+0x33>
+ 181:	48 8d 4d f2          	lea    -0xe(%rbp),%rcx
+ 185:	ba 01 00 00 00       	mov    $0x1,%edx
+ 18a:	48 89 ce             	mov    %rcx,%rsi
+ 18d:	89 c7                	mov    %eax,%edi
+ 18f:	e8 00 00 00 00       	call   194 <semaphore_v+0x46>
+ 194:	83 f8 ff             	cmp    $0xffffffff,%eax
+ 197:	75 07                	jne    1a0 <semaphore_v+0x52>
+        return -1;
+ 199:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+ 19e:	eb 05                	jmp    1a5 <semaphore_v+0x57>
+    return 0;
+ 1a0:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+ 1a5:	48 8b 55 f8          	mov    -0x8(%rbp),%rdx
+ 1a9:	64 48 2b 14 25 28 00 	sub    %fs:0x28,%rdx
+ 1b0:	00 00 
+ 1b2:	74 05                	je     1b9 <semaphore_v+0x6b>
+ 1b4:	e8 00 00 00 00       	call   1b9 <semaphore_v+0x6b>
+ 1b9:	c9                   	leave
+ 1ba:	c3                   	ret
+
+00000000000001bb <semaphore_p>:
+{
+ 1bb:	f3 0f 1e fa          	endbr64
+ 1bf:	55                   	push   %rbp
+ 1c0:	48 89 e5             	mov    %rsp,%rbp
+ 1c3:	48 83 ec 10          	sub    $0x10,%rsp
+ 1c7:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+ 1ce:	00 00 
+ 1d0:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+ 1d4:	31 c0                	xor    %eax,%eax
+    sem_b.sem_num = 0;
+ 1d6:	66 c7 45 f2 00 00    	movw   $0x0,-0xe(%rbp)
+    sem_b.sem_op = -1;
+ 1dc:	66 c7 45 f4 ff ff    	movw   $0xffff,-0xc(%rbp)
+    sem_b.sem_flg = SEM_UNDO;
+ 1e2:	66 c7 45 f6 00 10    	movw   $0x1000,-0xa(%rbp)
+    if (semop(sem_id, &sem_b, 1) == -1) {
+ 1e8:	8b 05 00 00 00 00    	mov    0x0(%rip),%eax        # 1ee <semaphore_p+0x33>
+ 1ee:	48 8d 4d f2          	lea    -0xe(%rbp),%rcx
+ 1f2:	ba 01 00 00 00       	mov    $0x1,%edx
+ 1f7:	48 89 ce             	mov    %rcx,%rsi
+ 1fa:	89 c7                	mov    %eax,%edi
+ 1fc:	e8 00 00 00 00       	call   201 <semaphore_p+0x46>
+ 201:	83 f8 ff             	cmp    $0xffffffff,%eax
+ 204:	75 07                	jne    20d <semaphore_p+0x52>
+        return -1;
+ 206:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+ 20b:	eb 05                	jmp    212 <semaphore_p+0x57>
+    return 0;
+ 20d:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+ 212:	48 8b 55 f8          	mov    -0x8(%rbp),%rdx
+ 216:	64 48 2b 14 25 28 00 	sub    %fs:0x28,%rdx
+ 21d:	00 00 
+ 21f:	74 05                	je     226 <semaphore_p+0x6b>
+ 221:	e8 00 00 00 00       	call   226 <semaphore_p+0x6b>
+ 226:	c9                   	leave
+ 227:	c3                   	ret
+
+0000000000000228 <semaphore_init>:
+{
+ 228:	f3 0f 1e fa          	endbr64
+ 22c:	55                   	push   %rbp
+ 22d:	48 89 e5             	mov    %rsp,%rbp
+    sem_id = semget((key_t)SEM_KEY, 0, 0666 | IPC_CREAT);
+ 230:	ba b6 03 00 00       	mov    $0x3b6,%edx
+ 235:	be 00 00 00 00       	mov    $0x0,%esi
+ 23a:	bf 64 00 00 00       	mov    $0x64,%edi
+ 23f:	e8 00 00 00 00       	call   244 <semaphore_init+0x1c>
+ 244:	89 05 00 00 00 00    	mov    %eax,0x0(%rip)        # 24a <semaphore_init+0x22>
+    if (sem_id == -1) {
+ 24a:	8b 05 00 00 00 00    	mov    0x0(%rip),%eax        # 250 <semaphore_init+0x28>
+ 250:	83 f8 ff             	cmp    $0xffffffff,%eax
+ 253:	75 07                	jne    25c <semaphore_init+0x34>
+        return -1;
+ 255:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+ 25a:	eb 05                	jmp    261 <semaphore_init+0x39>
+    return 0;
+ 25c:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+ 261:	5d                   	pop    %rbp
+ 262:	c3                   	ret
+
+0000000000000263 <sharemmy_init>:
+{
+ 263:	f3 0f 1e fa          	endbr64
+ 267:	55                   	push   %rbp
+ 268:	48 89 e5             	mov    %rsp,%rbp
+ 26b:	48 83 ec 10          	sub    $0x10,%rsp
+
+    shmid = shmget((key_t)SHM_KEY, sizeof(shared_use_t), 0666 | IPC_CREAT);
+ 26f:	ba b6 03 00 00       	mov    $0x3b6,%edx
+ 274:	be fc 05 00 00       	mov    $0x5fc,%esi
+ 279:	bf 65 00 00 00       	mov    $0x65,%edi
+ 27e:	e8 00 00 00 00       	call   283 <sharemmy_init+0x20>
+ 283:	89 45 fc             	mov    %eax,-0x4(%rbp)
+    if (shmid == -1) {
+ 286:	83 7d fc ff          	cmpl   $0xffffffff,-0x4(%rbp)
+ 28a:	75 05                	jne    291 <sharemmy_init+0x2e>
+        return shmid;
+ 28c:	8b 45 fc             	mov    -0x4(%rbp),%eax
+ 28f:	eb 32                	jmp    2c3 <sharemmy_init+0x60>
+    }
+
+    shm = shmat(shmid, (void *)0, 0);
+ 291:	8b 45 fc             	mov    -0x4(%rbp),%eax
+ 294:	ba 00 00 00 00       	mov    $0x0,%edx
+ 299:	be 00 00 00 00       	mov    $0x0,%esi
+ 29e:	89 c7                	mov    %eax,%edi
+ 2a0:	e8 00 00 00 00       	call   2a5 <sharemmy_init+0x42>
+ 2a5:	48 89 05 00 00 00 00 	mov    %rax,0x0(%rip)        # 2ac <sharemmy_init+0x49>
+    if (shm == (void *)-1) {
+ 2ac:	48 8b 05 00 00 00 00 	mov    0x0(%rip),%rax        # 2b3 <sharemmy_init+0x50>
+ 2b3:	48 83 f8 ff          	cmp    $0xffffffffffffffff,%rax
+ 2b7:	75 07                	jne    2c0 <sharemmy_init+0x5d>
+        return -1;
+ 2b9:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+ 2be:	eb 03                	jmp    2c3 <sharemmy_init+0x60>
+    }
+
+    return shmid;
+ 2c0:	8b 45 fc             	mov    -0x4(%rbp),%eax
+}
+ 2c3:	c9                   	leave
+ 2c4:	c3                   	ret
+
+00000000000002c5 <sharemmy_destroy>:
+
+static int sharemmy_destroy(int shmid, void *shm)
+{
+ 2c5:	f3 0f 1e fa          	endbr64
+ 2c9:	55                   	push   %rbp
+ 2ca:	48 89 e5             	mov    %rsp,%rbp
+ 2cd:	48 83 ec 20          	sub    $0x20,%rsp
+ 2d1:	89 7d ec             	mov    %edi,-0x14(%rbp)
+ 2d4:	48 89 75 e0          	mov    %rsi,-0x20(%rbp)
+    int rv;
+
+    rv = shmdt(shm);
+ 2d8:	48 8b 45 e0          	mov    -0x20(%rbp),%rax
+ 2dc:	48 89 c7             	mov    %rax,%rdi
+ 2df:	e8 00 00 00 00       	call   2e4 <sharemmy_destroy+0x1f>
+ 2e4:	89 45 fc             	mov    %eax,-0x4(%rbp)
+    if (rv == -1) {
+ 2e7:	83 7d fc ff          	cmpl   $0xffffffff,-0x4(%rbp)
+ 2eb:	75 05                	jne    2f2 <sharemmy_destroy+0x2d>
+        return rv;
+ 2ed:	8b 45 fc             	mov    -0x4(%rbp),%eax
+ 2f0:	eb 05                	jmp    2f7 <sharemmy_destroy+0x32>
+    }
+
+    return 0;
+ 2f2:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+ 2f7:	c9                   	leave
+ 2f8:	c3                   	ret
+
+00000000000002f9 <main>:
+
+u_int64_t t[1000000];
+void set_cpu(int id);
+
+int main()
+{
+ 2f9:	f3 0f 1e fa          	endbr64
+ 2fd:	55                   	push   %rbp
+ 2fe:	48 89 e5             	mov    %rsp,%rbp
+ 301:	41 54                	push   %r12
+ 303:	53                   	push   %rbx
+ 304:	48 81 ec b0 00 00 00 	sub    $0xb0,%rsp
+ 30b:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+ 312:	00 00 
+ 314:	48 89 45 e8          	mov    %rax,-0x18(%rbp)
+ 318:	31 c0                	xor    %eax,%eax
+	int rv,i,j,z,temp = 1;
+ 31a:	c7 85 50 ff ff ff 01 	movl   $0x1,-0xb0(%rbp)
+ 321:	00 00 00 
+    	int shmid;
+    	register u_int64_t time1, time2, time3;
+    	puts("cpu affinity set");
+ 324:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 32b <main+0x32>
+ 32b:	48 89 c7             	mov    %rax,%rdi
+ 32e:	e8 00 00 00 00       	call   333 <main+0x3a>
+    	 // pin CPU
+    	set_cpu(8);
+ 333:	bf 08 00 00 00       	mov    $0x8,%edi
+ 338:	e8 00 00 00 00       	call   33d <main+0x44>
+    	cpu_set_t get;
+	shared_use_t *shared;
+
+    	CPU_ZERO(&get);
+ 33d:	48 8d 85 60 ff ff ff 	lea    -0xa0(%rbp),%rax
+ 344:	48 89 c6             	mov    %rax,%rsi
+ 347:	b8 00 00 00 00       	mov    $0x0,%eax
+ 34c:	ba 10 00 00 00       	mov    $0x10,%edx
+ 351:	48 89 f7             	mov    %rsi,%rdi
+ 354:	48 89 d1             	mov    %rdx,%rcx
+ 357:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+    	if (sched_getaffinity(0, sizeof(get), &get) == -1) {
+ 35a:	48 8d 85 60 ff ff ff 	lea    -0xa0(%rbp),%rax
+ 361:	48 89 c2             	mov    %rax,%rdx
+ 364:	be 80 00 00 00       	mov    $0x80,%esi
+ 369:	bf 00 00 00 00       	mov    $0x0,%edi
+ 36e:	e8 00 00 00 00       	call   373 <main+0x7a>
+ 373:	83 f8 ff             	cmp    $0xffffffff,%eax
+ 376:	75 2f                	jne    3a7 <main+0xae>
+        	printf("get CPU affinity failue, ERROR:%s\n", strerror(errno));
+ 378:	e8 00 00 00 00       	call   37d <main+0x84>
+ 37d:	8b 00                	mov    (%rax),%eax
+ 37f:	89 c7                	mov    %eax,%edi
+ 381:	e8 00 00 00 00       	call   386 <main+0x8d>
+ 386:	48 89 c6             	mov    %rax,%rsi
+ 389:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 390 <main+0x97>
+ 390:	48 89 c7             	mov    %rax,%rdi
+ 393:	b8 00 00 00 00       	mov    $0x0,%eax
+ 398:	e8 00 00 00 00       	call   39d <main+0xa4>
+        	return -1;
+ 39d:	b8 ff ff ff ff       	mov    $0xffffffff,%eax
+ 3a2:	e9 9c 02 00 00       	jmp    643 <main+0x34a>
+    	}
+
+
+
+	rv = semaphore_init();
+ 3a7:	b8 00 00 00 00       	mov    $0x0,%eax
+ 3ac:	e8 77 fe ff ff       	call   228 <semaphore_init>
+ 3b1:	89 85 54 ff ff ff    	mov    %eax,-0xac(%rbp)
+    	if (rv < 0) {
+ 3b7:	83 bd 54 ff ff ff 00 	cmpl   $0x0,-0xac(%rbp)
+ 3be:	79 19                	jns    3d9 <main+0xe0>
+        	printf("Init a semaphore fail.\n");
+ 3c0:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 3c7 <main+0xce>
+ 3c7:	48 89 c7             	mov    %rax,%rdi
+ 3ca:	e8 00 00 00 00       	call   3cf <main+0xd6>
+        	return 0;
+ 3cf:	b8 00 00 00 00       	mov    $0x0,%eax
+ 3d4:	e9 6a 02 00 00       	jmp    643 <main+0x34a>
+    	}
+
+    	shmid = sharemmy_init();
+ 3d9:	e8 85 fe ff ff       	call   263 <sharemmy_init>
+ 3de:	89 85 58 ff ff ff    	mov    %eax,-0xa8(%rbp)
+    	if (shmid == -1) {
+ 3e4:	83 bd 58 ff ff ff ff 	cmpl   $0xffffffff,-0xa8(%rbp)
+ 3eb:	75 19                	jne    406 <main+0x10d>
+        	printf("Init a share memory fail.\n");
+ 3ed:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 3f4 <main+0xfb>
+ 3f4:	48 89 c7             	mov    %rax,%rdi
+ 3f7:	e8 00 00 00 00       	call   3fc <main+0x103>
+        	return 0;
+ 3fc:	b8 00 00 00 00       	mov    $0x0,%eax
+ 401:	e9 3d 02 00 00       	jmp    643 <main+0x34a>
+    	
+	}
+	// Coarse synchronization via shared memory, can be a fixed time agreed in advance
+	semaphore_p();
+ 406:	b8 00 00 00 00       	mov    $0x0,%eax
+ 40b:	e8 ab fd ff ff       	call   1bb <semaphore_p>
+    	memcpy(t, ((shared_use_t *)shm)->pkt, ((shared_use_t *)shm)->pktlen);
+ 410:	48 8b 05 00 00 00 00 	mov    0x0(%rip),%rax        # 417 <main+0x11e>
+ 417:	8b 00                	mov    (%rax),%eax
+ 419:	48 98                	cltq
+ 41b:	48 8b 15 00 00 00 00 	mov    0x0(%rip),%rdx        # 422 <main+0x129>
+ 422:	48 8d 4a 04          	lea    0x4(%rdx),%rcx
+ 426:	48 89 c2             	mov    %rax,%rdx
+ 429:	48 89 ce             	mov    %rcx,%rsi
+ 42c:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 433 <main+0x13a>
+ 433:	48 89 c7             	mov    %rax,%rdi
+ 436:	e8 00 00 00 00       	call   43b <main+0x142>
+	time3 = t[0] + 20000;
+ 43b:	48 8b 05 00 00 00 00 	mov    0x0(%rip),%rax        # 442 <main+0x149>
+ 442:	48 8d 98 20 4e 00 00 	lea    0x4e20(%rax),%rbx
+    	
+    	printf("time:%ld\n", time1);
+ 449:	4c 89 e6             	mov    %r12,%rsi
+ 44c:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 453 <main+0x15a>
+ 453:	48 89 c7             	mov    %rax,%rdi
+ 456:	b8 00 00 00 00       	mov    $0x0,%eax
+ 45b:	e8 00 00 00 00       	call   460 <main+0x167>
+    	
+	
+	for(j=0;j<100000;j++){
+ 460:	c7 85 48 ff ff ff 00 	movl   $0x0,-0xb8(%rbp)
+ 467:	00 00 00 
+ 46a:	e9 83 01 00 00       	jmp    5f2 <main+0x2f9>
+		i = j % 8;
+ 46f:	8b 95 48 ff ff ff    	mov    -0xb8(%rbp),%edx
+ 475:	89 d0                	mov    %edx,%eax
+ 477:	c1 f8 1f             	sar    $0x1f,%eax
+ 47a:	c1 e8 1d             	shr    $0x1d,%eax
+ 47d:	01 c2                	add    %eax,%edx
+ 47f:	83 e2 07             	and    $0x7,%edx
+ 482:	29 c2                	sub    %eax,%edx
+ 484:	89 95 5c ff ff ff    	mov    %edx,-0xa4(%rbp)
+    		time2 = rdtsc();
+ 48a:	b8 00 00 00 00       	mov    $0x0,%eax
+ 48f:	e8 00 00 00 00       	call   494 <main+0x19b>
+ 494:	49 89 c4             	mov    %rax,%r12
+    		while(time2 < time3) time2 = rdtsc();
+ 497:	eb 0d                	jmp    4a6 <main+0x1ad>
+ 499:	b8 00 00 00 00       	mov    $0x0,%eax
+ 49e:	e8 00 00 00 00       	call   4a3 <main+0x1aa>
+ 4a3:	49 89 c4             	mov    %rax,%r12
+ 4a6:	49 39 dc             	cmp    %rbx,%r12
+ 4a9:	72 ee                	jb     499 <main+0x1a0>
+    		// sender's loop, changed in send.s, lines 626 to 787
+    		if(i == 0) {
+ 4ab:	83 bd 5c ff ff ff 00 	cmpl   $0x0,-0xa4(%rbp)
+ 4b2:	75 21                	jne    4d5 <main+0x1dc>
+			for(z = 0; z < 100; z++){
+ 4b4:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 4bb:	00 00 00 
+ 4be:	eb 07                	jmp    4c7 <main+0x1ce>
+ 4c0:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 4c7:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 4ce:	7e f0                	jle    4c0 <main+0x1c7>
+ 4d0:	e9 0f 01 00 00       	jmp    5e4 <main+0x2eb>
+			
+			}
+		} else if(i == 1) {
+ 4d5:	83 bd 5c ff ff ff 01 	cmpl   $0x1,-0xa4(%rbp)
+ 4dc:	75 21                	jne    4ff <main+0x206>
+			for(z = 0; z < 100; z++){
+ 4de:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 4e5:	00 00 00 
+ 4e8:	eb 07                	jmp    4f1 <main+0x1f8>
+ 4ea:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 4f1:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 4f8:	7e f0                	jle    4ea <main+0x1f1>
+ 4fa:	e9 e5 00 00 00       	jmp    5e4 <main+0x2eb>
+			
+			}
+		} else if(i == 2) {
+ 4ff:	83 bd 5c ff ff ff 02 	cmpl   $0x2,-0xa4(%rbp)
+ 506:	75 21                	jne    529 <main+0x230>
+			for(z = 0; z < 100; z++){
+ 508:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 50f:	00 00 00 
+ 512:	eb 07                	jmp    51b <main+0x222>
+ 514:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 51b:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 522:	7e f0                	jle    514 <main+0x21b>
+ 524:	e9 bb 00 00 00       	jmp    5e4 <main+0x2eb>
+			
+			}
+		}else if(i == 3) {
+ 529:	83 bd 5c ff ff ff 03 	cmpl   $0x3,-0xa4(%rbp)
+ 530:	75 21                	jne    553 <main+0x25a>
+			for(z = 0; z < 100; z++){
+ 532:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 539:	00 00 00 
+ 53c:	eb 07                	jmp    545 <main+0x24c>
+ 53e:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 545:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 54c:	7e f0                	jle    53e <main+0x245>
+ 54e:	e9 91 00 00 00       	jmp    5e4 <main+0x2eb>
+			
+			}
+		}else if(i == 4) {
+ 553:	83 bd 5c ff ff ff 04 	cmpl   $0x4,-0xa4(%rbp)
+ 55a:	75 1e                	jne    57a <main+0x281>
+			for(z = 0; z < 100; z++){
+ 55c:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 563:	00 00 00 
+ 566:	eb 07                	jmp    56f <main+0x276>
+ 568:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 56f:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 576:	7e f0                	jle    568 <main+0x26f>
+ 578:	eb 6a                	jmp    5e4 <main+0x2eb>
+			
+			}
+		}else if(i == 5) {
+ 57a:	83 bd 5c ff ff ff 05 	cmpl   $0x5,-0xa4(%rbp)
+ 581:	75 1e                	jne    5a1 <main+0x2a8>
+			for(z = 0; z < 100; z++){
+ 583:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 58a:	00 00 00 
+ 58d:	eb 07                	jmp    596 <main+0x29d>
+ 58f:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 596:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 59d:	7e f0                	jle    58f <main+0x296>
+ 59f:	eb 43                	jmp    5e4 <main+0x2eb>
+			
+			}
+		}else if(i == 6) {
+ 5a1:	83 bd 5c ff ff ff 06 	cmpl   $0x6,-0xa4(%rbp)
+ 5a8:	75 1e                	jne    5c8 <main+0x2cf>
+			for(z = 0; z < 100; z++){
+ 5aa:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 5b1:	00 00 00 
+ 5b4:	eb 07                	jmp    5bd <main+0x2c4>
+ 5b6:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 5bd:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 5c4:	7e f0                	jle    5b6 <main+0x2bd>
+ 5c6:	eb 1c                	jmp    5e4 <main+0x2eb>
+			
+			}
+		} else {
+			for(z = 0; z < 100; z++){
+ 5c8:	c7 85 4c ff ff ff 00 	movl   $0x0,-0xb4(%rbp)
+ 5cf:	00 00 00 
+ 5d2:	eb 07                	jmp    5db <main+0x2e2>
+ 5d4:	83 85 4c ff ff ff 01 	addl   $0x1,-0xb4(%rbp)
+ 5db:	83 bd 4c ff ff ff 63 	cmpl   $0x63,-0xb4(%rbp)
+ 5e2:	7e f0                	jle    5d4 <main+0x2db>
+			
+			}
+		}
+		time3 += 7000;
+ 5e4:	48 81 c3 58 1b 00 00 	add    $0x1b58,%rbx
+	for(j=0;j<100000;j++){
+ 5eb:	83 85 48 ff ff ff 01 	addl   $0x1,-0xb8(%rbp)
+ 5f2:	81 bd 48 ff ff ff 9f 	cmpl   $0x1869f,-0xb8(%rbp)
+ 5f9:	86 01 00 
+ 5fc:	0f 8e 6d fe ff ff    	jle    46f <main+0x176>
+    	}
+
+	rv = sharemmy_destroy(shmid, shm);
+ 602:	48 8b 15 00 00 00 00 	mov    0x0(%rip),%rdx        # 609 <main+0x310>
+ 609:	8b 85 58 ff ff ff    	mov    -0xa8(%rbp),%eax
+ 60f:	48 89 d6             	mov    %rdx,%rsi
+ 612:	89 c7                	mov    %eax,%edi
+ 614:	e8 ac fc ff ff       	call   2c5 <sharemmy_destroy>
+ 619:	89 85 54 ff ff ff    	mov    %eax,-0xac(%rbp)
+    	if (rv < 0) {
+ 61f:	83 bd 54 ff ff ff 00 	cmpl   $0x0,-0xac(%rbp)
+ 626:	79 16                	jns    63e <main+0x345>
+        	printf("Destroy share memory fail.\n");
+ 628:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 62f <main+0x336>
+ 62f:	48 89 c7             	mov    %rax,%rdi
+ 632:	e8 00 00 00 00       	call   637 <main+0x33e>
+        	return 0;
+ 637:	b8 00 00 00 00       	mov    $0x0,%eax
+ 63c:	eb 05                	jmp    643 <main+0x34a>
+    	}
+	return 0;
+ 63e:	b8 00 00 00 00       	mov    $0x0,%eax
+}
+ 643:	48 8b 55 e8          	mov    -0x18(%rbp),%rdx
+ 647:	64 48 2b 14 25 28 00 	sub    %fs:0x28,%rdx
+ 64e:	00 00 
+ 650:	74 05                	je     657 <main+0x35e>
+ 652:	e8 00 00 00 00       	call   657 <main+0x35e>
+ 657:	48 81 c4 b0 00 00 00 	add    $0xb0,%rsp
+ 65e:	5b                   	pop    %rbx
+ 65f:	41 5c                	pop    %r12
+ 661:	5d                   	pop    %rbp
+ 662:	c3                   	ret
+
+0000000000000663 <set_cpu>:
+
+// setup the cpu set of this program to run on
+void set_cpu(int id)
+{
+ 663:	f3 0f 1e fa          	endbr64
+ 667:	55                   	push   %rbp
+ 668:	48 89 e5             	mov    %rsp,%rbp
+ 66b:	48 81 ec b0 00 00 00 	sub    $0xb0,%rsp
+ 672:	89 bd 5c ff ff ff    	mov    %edi,-0xa4(%rbp)
+ 678:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+ 67f:	00 00 
+ 681:	48 89 45 f8          	mov    %rax,-0x8(%rbp)
+ 685:	31 c0                	xor    %eax,%eax
+    cpu_set_t mask;
+    CPU_ZERO(&mask);
+ 687:	48 8d 85 70 ff ff ff 	lea    -0x90(%rbp),%rax
+ 68e:	48 89 c6             	mov    %rax,%rsi
+ 691:	b8 00 00 00 00       	mov    $0x0,%eax
+ 696:	ba 10 00 00 00       	mov    $0x10,%edx
+ 69b:	48 89 f7             	mov    %rsi,%rdi
+ 69e:	48 89 d1             	mov    %rdx,%rcx
+ 6a1:	f3 48 ab             	rep stos %rax,%es:(%rdi)
+    CPU_SET(id, &mask);
+ 6a4:	8b 85 5c ff ff ff    	mov    -0xa4(%rbp),%eax
+ 6aa:	48 98                	cltq
+ 6ac:	48 89 85 68 ff ff ff 	mov    %rax,-0x98(%rbp)
+ 6b3:	48 81 bd 68 ff ff ff 	cmpq   $0x3ff,-0x98(%rbp)
+ 6ba:	ff 03 00 00 
+ 6be:	77 4d                	ja     70d <set_cpu+0xaa>
+ 6c0:	48 8b 85 68 ff ff ff 	mov    -0x98(%rbp),%rax
+ 6c7:	48 c1 e8 06          	shr    $0x6,%rax
+ 6cb:	48 8d 14 c5 00 00 00 	lea    0x0(,%rax,8),%rdx
+ 6d2:	00 
+ 6d3:	48 8d 8d 70 ff ff ff 	lea    -0x90(%rbp),%rcx
+ 6da:	48 01 ca             	add    %rcx,%rdx
+ 6dd:	48 8b 12             	mov    (%rdx),%rdx
+ 6e0:	48 8b 8d 68 ff ff ff 	mov    -0x98(%rbp),%rcx
+ 6e7:	83 e1 3f             	and    $0x3f,%ecx
+ 6ea:	be 01 00 00 00       	mov    $0x1,%esi
+ 6ef:	48 d3 e6             	shl    %cl,%rsi
+ 6f2:	48 89 f1             	mov    %rsi,%rcx
+ 6f5:	48 8d 34 c5 00 00 00 	lea    0x0(,%rax,8),%rsi
+ 6fc:	00 
+ 6fd:	48 8d 85 70 ff ff ff 	lea    -0x90(%rbp),%rax
+ 704:	48 01 f0             	add    %rsi,%rax
+ 707:	48 09 ca             	or     %rcx,%rdx
+ 70a:	48 89 10             	mov    %rdx,(%rax)
+    if (sched_setaffinity(0, sizeof(mask), &mask) == -1)
+ 70d:	48 8d 85 70 ff ff ff 	lea    -0x90(%rbp),%rax
+ 714:	48 89 c2             	mov    %rax,%rdx
+ 717:	be 80 00 00 00       	mov    $0x80,%esi
+ 71c:	bf 00 00 00 00       	mov    $0x0,%edi
+ 721:	e8 00 00 00 00       	call   726 <set_cpu+0xc3>
+ 726:	83 f8 ff             	cmp    $0xffffffff,%eax
+ 729:	75 23                	jne    74e <set_cpu+0xeb>
+    {
+        fprintf(stderr, "warning: could not set CPU affinity/n");
+ 72b:	48 8b 05 00 00 00 00 	mov    0x0(%rip),%rax        # 732 <set_cpu+0xcf>
+ 732:	48 89 c1             	mov    %rax,%rcx
+ 735:	ba 25 00 00 00       	mov    $0x25,%edx
+ 73a:	be 01 00 00 00       	mov    $0x1,%esi
+ 73f:	48 8d 05 00 00 00 00 	lea    0x0(%rip),%rax        # 746 <set_cpu+0xe3>
+ 746:	48 89 c7             	mov    %rax,%rdi
+ 749:	e8 00 00 00 00       	call   74e <set_cpu+0xeb>
+    }
+}
+ 74e:	90                   	nop
+ 74f:	48 8b 45 f8          	mov    -0x8(%rbp),%rax
+ 753:	64 48 2b 04 25 28 00 	sub    %fs:0x28,%rax
+ 75a:	00 00 
+ 75c:	74 05                	je     763 <set_cpu+0x100>
+ 75e:	e8 00 00 00 00       	call   763 <set_cpu+0x100>
+ 763:	c9                   	leave
+ 764:	c3                   	ret

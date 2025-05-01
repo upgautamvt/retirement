@@ -149,3 +149,7 @@ movb $127, %al     ; AL = 01111111 (max positive 8-bit signed value)
 addb $1, %al       ; AL becomes 10000000 = -128 (in signed 8-bit)
 Here signed overflow will occur because if this is 8 bit signed then there can be -128, 127 but when we add 1 to 127, it becomes 128, which is overflow.
 We will see overflow flag (OF)
+
+
+upgautam@amd:~/CLionProjects/retirement/covert_channel_assembly_learning$ gcc -g -O0 -fno-inline -save-temps send.c -o send
+upgautam@amd:~/CLionProjects/retirement/covert_channel_assembly_learning$ objdump -d -S send.o > send.lst
